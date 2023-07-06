@@ -1,0 +1,26 @@
+{
+  "name": "cancelablepromise",
+  "version": "1.0.0",
+  "description": "",
+  "main": "canceablePromise.test.js",
+  "scripts": {
+    "test": "npm run ./node_modules/.bin/jest"
+  },
+  "jest": {
+    "verbose": true,
+    "testRegex": ".*.test.js",
+    "presets": ["@babel/preset-env"],
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/preset-env": "^7.22.6",
+    "babel-jest": "^29.6.0",
+    "jest": "^29.6.0",
+    "ts-node": "^10.9.1"
+  }
+}
