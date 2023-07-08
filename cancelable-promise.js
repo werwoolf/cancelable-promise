@@ -6,7 +6,7 @@ export default class CancelablePromise {
         REJECTED: "rejected"
     }
 
-    constructor(executor, name) {
+    constructor(executor, name = 1) {
         // console.log("created: ", name)
         this.state = this.#statuses.PENDING;
         this.name = name
@@ -21,11 +21,10 @@ export default class CancelablePromise {
     }
 
     onResolve(value) {
-        // console.log(`onResolve: ${this.name}`, {value})
         this.state = this.#statuses.FULFILLED;
         this.value = value;
-        if (this.isCanceled || !this.fulfilledCb) {
-            // console.log("skip execution: ", this)
+
+        if (this.isCanceled) {       //remove for then() - empty arguments
             return
         }
 
@@ -53,7 +52,7 @@ export default class CancelablePromise {
     }
 
     then(onfulfilled, onrejected) {
-
+        console.log(this)
         const isValidArgs = ["function", "undefined"].includes(typeof onfulfilled) && ["function", "undefined"].includes(typeof onrejected);
         if (!isValidArgs) {
             throw "invalid args"
@@ -64,10 +63,7 @@ export default class CancelablePromise {
 
         this.childrens.push(newPromise);
 
-        if (onfulfilled) {
-            // newPromise.fulfilledCbs.push()
-            this.fulfilledCb = (onfulfilled || (v => v))
-        }
+        this.fulfilledCb = (onfulfilled || (v => v))
 
         if (onrejected) {
             newPromise.rejectedCb = onrejected;
@@ -81,6 +77,8 @@ export default class CancelablePromise {
         if (this.state === this.#statuses.FULFILLED) {
             this.onResolve(this.value)
         }
+
+        // newPromise.value = this.value // - add for then() - empty arguments
 
         return newPromise;
     }
@@ -102,21 +100,16 @@ export default class CancelablePromise {
     }
 }
 
-const initValue = 10
-const multiplier = 2
-const onFulfilled = value => value * multiplier
-
-const cp = new CancelablePromise(resolve => resolve(initValue), 1);
-
-const cp2 = cp.then(v => {
-    return new Promise(resolve => setTimeout(() => resolve(onFulfilled(v))))
-});
-
-const cp3 = cp.then(console.log);
-
-const cp4 = cp2.then(console.log);
-
-
-// console.log({
-//     cp, cp2, cp3, cp4
+// const initValue = 10
+// const multiplier = 2
+// const onFulfilled = value => value * multiplier
+//
+// const cp = new CancelablePromise(resolve => resolve(initValue))
+// const cp2 = cp.then(v => {
+//     return new Promise(resolve => setTimeout(() => resolve(onFulfilled(v))))
 // })
+//
+// Promise.race([cp2])
+//
+// cp.then(console.log)
+// cp2.then(console.log)
