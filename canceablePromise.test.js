@@ -49,7 +49,6 @@ describe('CancelablePromise test', () => {
             getPromiseState(cp2, state => expect(state).toBe('pending'))
 
             await expect(cp).resolves.toBe(initValue)
-
             await expect(cp2).resolves.toBe(onFulfilled(initValue))
         })
 
