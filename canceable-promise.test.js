@@ -1,6 +1,6 @@
 import CancelablePromise from './cancelable-promise'
 
-const { describe, expect, test } = global
+const {describe, expect, test} = global
 
 describe('CancelablePromise test', () => {
     test('throws on wrong constructor arguments', () => {
@@ -74,10 +74,10 @@ describe('CancelablePromise test', () => {
             await expect(cp).resolves.toBe(initValue)
         })
 
-        test('.then().then() ... .then()', async() => {
+        test('.then().then() ... .then()', async () => {
             const depth = 10
             let promise = new CancelablePromise(resolve => resolve(0))
-            for(let idx = 0; idx < depth; ++idx) {
+            for (let idx = 0; idx < depth; ++idx) {
                 promise = promise.then(val => val + 1)
             }
 
@@ -120,8 +120,6 @@ describe('CancelablePromise test', () => {
         })
     })
 })
-
-
 
 
 function getPromiseState(promise, callback) {

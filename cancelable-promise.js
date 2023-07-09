@@ -9,19 +9,20 @@ export default class CancelablePromise {
     constructor(executor, name = 1) {
         // console.log("created: ", name)
         this.state = this.#statuses.PENDING;
-        this.name = name
+        this.name = name;
         this.fulfilledCb = null;
         this.rejectedCb = null;
 
         this.isCanceled = false;
 
         this.childrens = [];
+        this.parent = null;
         this.resolvesByPromise = false;
         executor(this.onResolve.bind(this), this.onReject.bind(this));
     }
 
     onResolve(value, cause) {
-        console.log("onResolve", this.name)
+
         this.state = this.#statuses.FULFILLED;
         this.value = value;
 
@@ -30,10 +31,7 @@ export default class CancelablePromise {
         const cbResult = this.fulfilledCb?.(value);
 
         if (cbResult instanceof Promise) {
-            // console.log("trigger children PROMISE resolve", this.name)
-            this.childrens.forEach(child => {
-                child.resolvesByPromise = true;
-            })
+            this.childrens.forEach(child => child.resolvesByPromise = true)
             cbResult
                 .then(res => this.childrens?.forEach(children => children.onResolve(res, "in promise")))
                 .catch((reason) => {
@@ -51,8 +49,8 @@ export default class CancelablePromise {
     }
 
     onReject(value, isParent) {
-        console.log("onReject", this.name)
         this.state = this.#statuses.REJECTED;
+
 
         if (this.rejectedCb){
             this.rejectedCb(value)
@@ -61,7 +59,7 @@ export default class CancelablePromise {
 
         if (this.childrens.length) {
             for (let child of this.childrens) {
-                if (child.fulfilledCb){
+                if (child.fulfilledCb) {
                     child.onResolve(value)
                     break
                 }
@@ -79,6 +77,8 @@ export default class CancelablePromise {
 
         const newPromise = new CancelablePromise((res, rej) => {
         }, this.name + 1)
+
+        newPromise.parent = this;
 
         this.childrens.push(newPromise);
 
@@ -107,10 +107,11 @@ export default class CancelablePromise {
             throw "invalid args"
         }
 
-     return this.then(undefined, onrejected)
+        return this.then(undefined, onrejected)
     }
 
     cancel() {
+        this.parent?.cancel()
         this.isCanceled = true;
     }
 }
