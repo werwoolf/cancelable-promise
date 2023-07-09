@@ -1,29 +1,25 @@
 export default class CancelablePromise {
-    #statuses = {
-        PENDING: "pending",
-        FULFILLED: "fulfilled",
-        REJECTED: "rejected"
-    }
 
     constructor(executor) {
-        this.state = this.#statuses.PENDING;
         this.fulfilledCb = null;
         this.rejectedCb = null;
 
+        this.isFulfilled = false;
         this.isCanceled = false;
 
         this.childrens = [];
         this.parent = null;
         this.resolvesByPromise = false;
+
         executor(this.onResolve.bind(this), this.onReject.bind(this));
     }
 
-    onResolve(value, cause) {
-        this.state = this.#statuses.FULFILLED;
+    onResolve(value) {
+        this.isFulfilled = true;
         this.value = value;
 
         if (this.isCanceled) {
-            this.onReject({ isCanceled: true })
+            this.onReject({isCanceled: true})
             return
         }
 
@@ -32,32 +28,20 @@ export default class CancelablePromise {
         if (cbResult instanceof Promise) {
             this.childrens.forEach(child => child.resolvesByPromise = true)
             cbResult
-                .then(res => this.childrens?.forEach(children => children.onResolve(res, "in promise")))
+                .then(res => this.childrens?.forEach(children => children.onResolve(res)))
                 .catch((reason) => {
-                    this.childrens.forEach(children => children.onResolve(children.rejectedCb(reason), "in promise"))
+                    this.childrens.forEach(children => children.onResolve(children.rejectedCb(reason)))
                 })
         } else {
             this.childrens
                 .filter(({resolvesByPromise}) => !resolvesByPromise)
-                .forEach(children => children.onResolve(cbResult, "sync"))
+                .forEach(children => children.onResolve(cbResult))
         }
     }
 
-    onReject(value, isParent) {
-        this.state = this.#statuses.REJECTED;
-
-        if (this.rejectedCb) {
-            this.rejectedCb(value)
-        }
-
-        if (this.childrens.length) {
-            for (let child of this.childrens) {
-                if (child.fulfilledCb) {
-                    child.onResolve(value)
-                    break
-                }
-            }
-        }
+    onReject(value) {
+        this.rejectedCb && this.rejectedCb(value)
+        this.childrens.forEach(child => child.onResolve(value))
     }
 
     then(onfulfilled, onrejected) {
@@ -66,7 +50,8 @@ export default class CancelablePromise {
             throw "invalid args"
         }
 
-        const newPromise = new CancelablePromise(() => {})
+        const newPromise = new CancelablePromise(() => {
+        })
 
         newPromise.parent = this;
         this.childrens.push(newPromise);
@@ -77,11 +62,7 @@ export default class CancelablePromise {
             this.rejectedCb = onrejected;
         }
 
-        if (this.isCanceled) {
-            newPromise.isCanceled = true;
-        }
-
-        if (this.state === this.#statuses.FULFILLED) {
+        if (this.isFulfilled) {
             this.onResolve(this.value)
         }
 
