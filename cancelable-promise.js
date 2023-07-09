@@ -22,11 +22,13 @@ export default class CancelablePromise {
     }
 
     onResolve(value, cause) {
-
         this.state = this.#statuses.FULFILLED;
         this.value = value;
 
-        if (this.isCanceled) return;
+        if (this.isCanceled) {
+            this.onReject({ isCanceled: true })
+            return
+        }
 
         const cbResult = this.fulfilledCb?.(value);
 
@@ -49,10 +51,10 @@ export default class CancelablePromise {
     }
 
     onReject(value, isParent) {
+        console.log("onReject")
         this.state = this.#statuses.REJECTED;
 
-
-        if (this.rejectedCb){
+        if (this.rejectedCb) {
             this.rejectedCb(value)
             // return
         }
@@ -111,7 +113,18 @@ export default class CancelablePromise {
     }
 
     cancel() {
+        // console.log("cancel")
         this.parent?.cancel()
         this.isCanceled = true;
     }
 }
+//
+// let value = 0
+// const promise = new CancelablePromise(resolve => setTimeout(() => resolve(1), 100))
+//     .then(v => value = v)
+//
+// setTimeout(() => promise.cancel())
+//
+// promise.catch(console.log)
+//
+// console.log(value) // 0
