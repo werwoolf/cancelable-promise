@@ -1,5 +1,4 @@
 export default class CancelablePromise {
-
     constructor(executor) {
         this.fulfilledCb = null;
         this.rejectedCb = null;
@@ -20,7 +19,7 @@ export default class CancelablePromise {
 
         if (this.isCanceled) {
             this.onReject({isCanceled: true})
-            return
+            return;
         }
 
         const cbResult = this.fulfilledCb?.(value);
@@ -29,9 +28,9 @@ export default class CancelablePromise {
             this.childrens.forEach(child => child.resolvesByPromise = true)
             cbResult
                 .then(res => this.childrens?.forEach(children => children.onResolve(res)))
-                .catch((reason) => {
+                .catch(reason => (
                     this.childrens.forEach(children => children.onResolve(children.rejectedCb(reason)))
-                })
+                ))
         } else {
             this.childrens
                 .filter(({resolvesByPromise}) => !resolvesByPromise)
@@ -45,32 +44,37 @@ export default class CancelablePromise {
     }
 
     then(onfulfilled, onrejected) {
-        const isValidArgs = ["function", "undefined"].includes(typeof onfulfilled) && ["function", "undefined"].includes(typeof onrejected);
-        if (!isValidArgs) {
-            throw "invalid args"
-        }
+        this.#checkValidThenArguments({onfulfilled, onrejected})
+        const newPromise = this.#createChild(onrejected);
 
-        const newPromise = new CancelablePromise(() => {
-        })
-
-        newPromise.parent = this;
-        this.childrens.push(newPromise);
-        this.fulfilledCb = (onfulfilled || (v => v))
-
-        if (onrejected) {
-            newPromise.rejectedCb = onrejected;
-            this.rejectedCb = onrejected;
-        }
+        this.fulfilledCb = (onfulfilled || (v => v));
+        this.rejectedCb = onrejected ?? null;
 
         if (this.isFulfilled) {
-            this.onResolve(this.value)
+            this.onResolve(this.value);
         }
 
         return newPromise;
     }
 
     cancel() {
-        this.parent?.cancel()
+        this.parent?.cancel();
         this.isCanceled = true;
+    }
+
+    #createChild(onReject) {
+        const child = new CancelablePromise(() => {
+        });
+        child.parent = this;
+        child.rejectedCb = onReject;
+
+        this.childrens.push(child);
+        return child;
+    }
+
+    #checkValidThenArguments(args) {
+        Object.values(args).forEach(arg => {
+            if (!["function", "undefined"].includes(typeof arg)) throw "invalid arguments"
+        })
     }
 }
