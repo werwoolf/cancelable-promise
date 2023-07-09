@@ -2,7 +2,7 @@
   "name": "cancelablepromise",
   "version": "1.0.0",
   "description": "",
-  "main": "canceablePromise.test.js",
+  "main": "canceable-promise.test.js",
   "scripts": {
     "test": "npm run ./node_modules/.bin/jest"
   },

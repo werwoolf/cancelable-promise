@@ -1,4 +1,3 @@
-// class CancelablePromise {
 export default class CancelablePromise {
     #statuses = {
         PENDING: "pending",
@@ -16,26 +15,29 @@ export default class CancelablePromise {
         this.isCanceled = false;
 
         this.childrens = [];
-
+        this.resolvesByPromise = false;
         executor(this.onResolve.bind(this), this.onReject.bind(this));
     }
 
-    onResolve(value) {
+    onResolve(value, cause) {
+        // console.log("onResolve", this.name)
         this.state = this.#statuses.FULFILLED;
         this.value = value;
 
-        if (this.isCanceled) {       //remove for then() - empty arguments
-            return
-        }
+        if (this.isCanceled) return;
 
+        // console.log("call callback", this.name, " ", cause)
         const cbResult = this.fulfilledCb?.(value);
 
         if (cbResult instanceof Promise) {
             // console.log("trigger children PROMISE resolve", this.name)
-            cbResult.then(res => this.childrens?.forEach(children => children.onResolve(res)))
+            this.childrens.forEach(child => {
+                child.resolvesByPromise = true;
+            })
+            cbResult.then(res => this.childrens?.forEach(children => children.onResolve(res, "in promise")))
         } else {
             // console.log("trigger children SYNC resolve", this.name)
-            this.childrens.forEach(children => children.onResolve(cbResult))
+            this.childrens.filter(({resolvesByPromise}) => !resolvesByPromise).forEach(children => children.onResolve(cbResult, "sync"))
         }
     }
 
@@ -52,7 +54,7 @@ export default class CancelablePromise {
     }
 
     then(onfulfilled, onrejected) {
-        console.log(this)
+        // console.log(this.name)
         const isValidArgs = ["function", "undefined"].includes(typeof onfulfilled) && ["function", "undefined"].includes(typeof onrejected);
         if (!isValidArgs) {
             throw "invalid args"
@@ -75,10 +77,9 @@ export default class CancelablePromise {
         }
 
         if (this.state === this.#statuses.FULFILLED) {
+            // console.log("resol")
             this.onResolve(this.value)
         }
-
-        // newPromise.value = this.value // - add for then() - empty arguments
 
         return newPromise;
     }
@@ -100,16 +101,3 @@ export default class CancelablePromise {
     }
 }
 
-// const initValue = 10
-// const multiplier = 2
-// const onFulfilled = value => value * multiplier
-//
-// const cp = new CancelablePromise(resolve => resolve(initValue))
-// const cp2 = cp.then(v => {
-//     return new Promise(resolve => setTimeout(() => resolve(onFulfilled(v))))
-// })
-//
-// Promise.race([cp2])
-//
-// cp.then(console.log)
-// cp2.then(console.log)
