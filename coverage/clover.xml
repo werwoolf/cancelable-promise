@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1688891161613" clover="3.2.0">
+  <project timestamp="1688891161614" name="All files">
+    <metrics statements="41" coveredstatements="40" conditionals="21" coveredconditionals="19" methods="15" coveredmethods="15" elements="77" coveredelements="74" complexity="0" loc="41" ncloc="41" packages="1" files="1" classes="1"/>
+    <file name="cancelable-promise.js" path="/home/serhii/Desktop/my-projects/CancelablePromise/cancelable-promise.js">
+      <metrics statements="41" coveredstatements="40" conditionals="21" coveredconditionals="19" methods="15" coveredmethods="15"/>
+      <line num="3" count="45" type="stmt"/>
+      <line num="11" count="45" type="stmt"/>
+      <line num="12" count="45" type="stmt"/>
+      <line num="13" count="45" type="stmt"/>
+      <line num="14" count="45" type="stmt"/>
+      <line num="16" count="45" type="stmt"/>
+      <line num="18" count="45" type="stmt"/>
+      <line num="19" count="45" type="stmt"/>
+      <line num="20" count="45" type="stmt"/>
+      <line num="25" count="61" type="stmt"/>
+      <line num="26" count="61" type="stmt"/>
+      <line num="28" count="61" type="cond" truecount="2" falsecount="0"/>
+      <line num="32" count="60" type="stmt"/>
+      <line num="34" count="59" type="cond" truecount="2" falsecount="0"/>
+      <line num="36" count="2" type="stmt"/>
+      <line num="37" count="2" type="stmt"/>
+      <line num="39" count="2" type="stmt"/>
+      <line num="40" count="2" type="stmt"/>
+      <line num="42" count="1" type="stmt"/>
+      <line num="43" count="2" type="stmt"/>
+      <line num="47" count="57" type="stmt"/>
+      <line num="52" count="3" type="cond" truecount="1" falsecount="1"/>
+      <line num="54" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="55" count="2" type="stmt"/>
+      <line num="57" count="1" type="stmt"/>
+      <line num="60" count="3" type="stmt"/>
+      <line num="65" count="34" type="cond" truecount="2" falsecount="0"/>
+      <line num="66" count="34" type="cond" truecount="2" falsecount="0"/>
+      <line num="67" count="1" type="stmt"/>
+      <line num="70" count="33" type="stmt"/>
+      <line num="73" count="33" type="stmt"/>
+      <line num="75" count="33" type="cond" truecount="2" falsecount="0"/>
+      <line num="77" count="33" type="cond" truecount="2" falsecount="0"/>
+      <line num="78" count="19" type="stmt"/>
+      <line num="79" count="19" type="stmt"/>
+      <line num="82" count="33" type="cond" truecount="1" falsecount="1"/>
+      <line num="83" count="0" type="stmt"/>
+      <line num="86" count="33" type="cond" truecount="2" falsecount="0"/>
+      <line num="87" count="23" type="stmt"/>
+      <line num="90" count="32" type="stmt"/>
+      <line num="106" count="2" type="stmt"/>
+    </file>
+  </project>
+</coverage>

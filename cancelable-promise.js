@@ -1,4 +1,5 @@
 export default class CancelablePromise {
+// class CancelablePromise {
     #statuses = {
         PENDING: "pending",
         FULFILLED: "fulfilled",
@@ -20,13 +21,12 @@ export default class CancelablePromise {
     }
 
     onResolve(value, cause) {
-        // console.log("onResolve", this.name)
+        console.log("onResolve", this.name)
         this.state = this.#statuses.FULFILLED;
         this.value = value;
 
         if (this.isCanceled) return;
 
-        // console.log("call callback", this.name, " ", cause)
         const cbResult = this.fulfilledCb?.(value);
 
         if (cbResult instanceof Promise) {
@@ -34,23 +34,40 @@ export default class CancelablePromise {
             this.childrens.forEach(child => {
                 child.resolvesByPromise = true;
             })
-            cbResult.then(res => this.childrens?.forEach(children => children.onResolve(res, "in promise")))
+            cbResult
+                .then(res => this.childrens?.forEach(children => children.onResolve(res, "in promise")))
+                .catch((reason) => {
+
+                    const cbResult = this.rejectedCb(reason)
+
+                    this.childrens?.forEach(children => children.onResolve(cbResult, "in promise"))
+                })
         } else {
             // console.log("trigger children SYNC resolve", this.name)
-            this.childrens.filter(({resolvesByPromise}) => !resolvesByPromise).forEach(children => children.onResolve(cbResult, "sync"))
+            this.childrens
+                .filter(({resolvesByPromise}) => !resolvesByPromise)
+                .forEach(children => children.onResolve(cbResult, "sync"))
         }
     }
 
-    onReject(value) {
-        if (this.isCanceled) return;
+    onReject(value, isParent) {
+        console.log("onReject", this.name)
+        this.state = this.#statuses.REJECTED;
 
-        if (this.childrens.length) {
-            this.childrens?.forEach(child => child.onReject(value))
-        } else {
-            this.rejectedCb?.(value)
+        if (this.rejectedCb){
+            this.rejectedCb(value)
+            // return
         }
 
-        this.state = this.#statuses.REJECTED;
+        if (this.childrens.length) {
+            for (let child of this.childrens) {
+                if (child.fulfilledCb){
+                    child.onResolve(value)
+                    break
+                }
+            }
+        }
+
     }
 
     then(onfulfilled, onrejected) {
@@ -77,27 +94,23 @@ export default class CancelablePromise {
         }
 
         if (this.state === this.#statuses.FULFILLED) {
-            // console.log("resol")
             this.onResolve(this.value)
         }
 
         return newPromise;
     }
 
-    // catch(onrejected) {
-    //     const isValidArgs = ["function", "undefined"].includes(typeof onrejected);
-    //
-    //     if (!isValidArgs) {
-    //         throw "invalid args"
-    //     }
-    //
-    //     if (onrejected) {
-    //         this.rejectedCbs.push(onrejected)
-    //     }
-    // }
+    catch(onrejected) {
+        const isValidArgs = ["function", "undefined"].includes(typeof onrejected);
+
+        if (!isValidArgs) {
+            throw "invalid args"
+        }
+
+     return this.then(undefined, onrejected)
+    }
 
     cancel() {
         this.isCanceled = true;
     }
 }
-
